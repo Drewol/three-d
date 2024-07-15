@@ -37,7 +37,7 @@ mod depth_texture2d_multisample;
 #[doc(inline)]
 pub(in crate::core) use depth_texture2d_multisample::*;
 
-use data_type::*;
+pub use data_type::*;
 pub use three_d_asset::texture::{
     Interpolation, Texture2D as CpuTexture, Texture3D as CpuTexture3D, TextureData, Wrapping,
 };
@@ -183,6 +183,7 @@ impl ColorTexture<'_> {
 pub enum DepthTexture<'a> {
     /// A single 2D texture.
     Single(&'a DepthTexture2D),
+    SingleWithStencil(&'a DepthTexture2D),
     /// An array of 2D textures and an index into the array.
     Array {
         texture: &'a DepthTexture2DArray,
@@ -201,7 +202,7 @@ impl DepthTexture<'_> {
     ///
     pub fn width(&self) -> u32 {
         match self {
-            DepthTexture::Single(texture) => texture.width(),
+            DepthTexture::Single(texture) | Self::SingleWithStencil(texture) => texture.width(),
             DepthTexture::Array { texture, .. } => texture.width(),
             DepthTexture::CubeMap { texture, .. } => texture.width(),
         }
@@ -212,7 +213,9 @@ impl DepthTexture<'_> {
     ///
     pub fn height(&self) -> u32 {
         match self {
-            DepthTexture::Single(texture) => texture.height(),
+            DepthTexture::Single(texture) | DepthTexture::SingleWithStencil(texture) => {
+                texture.height()
+            }
             DepthTexture::Array { texture, .. } => texture.height(),
             DepthTexture::CubeMap { texture, .. } => texture.height(),
         }
@@ -222,7 +225,7 @@ impl DepthTexture<'_> {
     ///
     pub fn fragment_shader_source(&self) -> String {
         match self {
-            Self::Single { .. } => "
+            Self::Single { .. } | Self::SingleWithStencil(_) => "
                 uniform sampler2D depthMap;
                 float sample_depth(vec2 uv)
                 {
@@ -248,7 +251,7 @@ impl DepthTexture<'_> {
     ///
     pub fn id(&self) -> u16 {
         match self {
-            Self::Single { .. } => 1u16,
+            Self::Single { .. } | Self::SingleWithStencil(_) => 1u16,
             Self::Array { .. } => 10u16,
             Self::CubeMap { .. } => {
                 todo!()
@@ -261,7 +264,9 @@ impl DepthTexture<'_> {
     ///
     pub fn use_uniforms(&self, program: &Program) {
         match self {
-            Self::Single(texture) => program.use_depth_texture("depthMap", texture),
+            Self::Single(texture) | Self::SingleWithStencil(texture) => {
+                program.use_depth_texture("depthMap", texture)
+            }
             Self::Array { texture, layer } => {
                 program.use_uniform("depthLayer", layer);
                 program.use_depth_texture_array("depthMap", texture);

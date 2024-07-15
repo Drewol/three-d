@@ -59,6 +59,10 @@ impl DepthTexture2D {
         DepthTarget::new_texture2d(&self.context, self)
     }
 
+    pub fn as_depth_stencil_target(&mut self) -> DepthTarget<'_> {
+        DepthTarget::new_texture2d_stencil(&self.context, self)
+    }
+
     /// The width of this texture.
     pub fn width(&self) -> u32 {
         self.width
@@ -74,6 +78,18 @@ impl DepthTexture2D {
             self.context.framebuffer_texture_2d(
                 crate::context::FRAMEBUFFER,
                 crate::context::DEPTH_ATTACHMENT,
+                crate::context::TEXTURE_2D,
+                Some(self.id),
+                0,
+            );
+        }
+    }
+
+    pub(in crate::core) fn bind_as_depth_stencil_target(&self) {
+        unsafe {
+            self.context.framebuffer_texture_2d(
+                crate::context::FRAMEBUFFER,
+                crate::context::DEPTH_STENCIL_ATTACHMENT,
                 crate::context::TEXTURE_2D,
                 Some(self.id),
                 0,

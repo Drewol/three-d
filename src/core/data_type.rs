@@ -1,23 +1,34 @@
 use crate::context::UniformLocation;
 use crate::core::*;
 
+/// TODO
 pub enum UniformType {
+    /// TODO
     Value,
+    /// TODO
     Vec2,
+    /// TODO
     Vec3,
+    /// TODO
     Vec4,
+    /// TODO
     Mat2,
+    /// TODO
     Mat3,
+    /// TODO
     Mat4,
 }
 
+/// TODO
 pub trait PrimitiveDataType: DataType + Copy + Default {
+    /// TODO
     fn send_uniform_with_type(
         context: &Context,
         location: &UniformLocation,
         data: &[Self],
         type_: UniformType,
     );
+    /// TODO
     fn internal_format_with_size(size: u32) -> u32;
 }
 
@@ -218,14 +229,19 @@ impl PrimitiveDataType for f32 {
         }
     }
 }
-
+/// Texture data type
 pub trait DataType: std::fmt::Debug + Clone {
+    /// TODO
     fn internal_format() -> u32;
+    /// TODO
     fn data_type() -> u32;
+    /// TODO
     fn size() -> u32;
+    /// TODO
     fn normalized() -> bool {
         false
     }
+    /// TODO
     fn send_uniform(context: &Context, location: &UniformLocation, data: &[Self]);
 }
 
@@ -608,8 +624,9 @@ impl<T: PrimitiveDataType> DataType for Matrix4<T> {
         T::send_uniform_with_type(context, location, &data, UniformType::Mat4)
     }
 }
-
+/// Depth texture data type
 pub trait DepthDataType {
+    /// TODO
     fn internal_format() -> u32;
 }
 

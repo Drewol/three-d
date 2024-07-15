@@ -22,6 +22,17 @@ impl<'a> DepthTarget<'a> {
         }
     }
 
+    pub(in crate::core) fn new_texture2d_stencil(
+        context: &Context,
+        texture: &'a DepthTexture2D,
+    ) -> Self {
+        Self {
+            context: context.clone(),
+            target: Some(DepthTexture::SingleWithStencil(texture)),
+            multisample_target: None,
+        }
+    }
+
     pub(in crate::core) fn new_texture_cube_map(
         context: &Context,
         texture: &'a DepthTextureCubeMap,
@@ -127,7 +138,9 @@ impl<'a> DepthTarget<'a> {
     pub fn width(&self) -> u32 {
         if let Some(target) = &self.target {
             match target {
-                DepthTexture::Single(texture) => texture.width(),
+                DepthTexture::Single(texture) | DepthTexture::SingleWithStencil(texture) => {
+                    texture.width()
+                }
                 DepthTexture::Array { texture, .. } => texture.width(),
                 DepthTexture::CubeMap { texture, .. } => texture.width(),
             }
@@ -142,7 +155,9 @@ impl<'a> DepthTarget<'a> {
     pub fn height(&self) -> u32 {
         if let Some(target) = &self.target {
             match target {
-                DepthTexture::Single(texture) => texture.height(),
+                DepthTexture::Single(texture) | DepthTexture::SingleWithStencil(texture) => {
+                    texture.height()
+                }
                 DepthTexture::Array { texture, .. } => texture.height(),
                 DepthTexture::CubeMap { texture, .. } => texture.height(),
             }
@@ -162,6 +177,9 @@ impl<'a> DepthTarget<'a> {
                 }
                 DepthTexture::CubeMap { texture, side } => {
                     texture.bind_as_depth_target(*side);
+                }
+                DepthTexture::SingleWithStencil(texture) => {
+                    texture.bind_as_depth_stencil_target();
                 }
             }
         } else {
